@@ -2,6 +2,15 @@ from .models import UserProfile, Booking, ImageProperty,Review, Property
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
+import joblib
+from django.conf import settings
+import os
+model_path = os.path.join(settings.BASE_DIR , 'model.pkl')
+model = joblib.load(model_path)
+
+vec_path = os.path.join(settings.BASE_DIR , 'ves.pkl')
+vec = joblib.load(vec_path)
+
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -59,6 +68,9 @@ class ReviewSerializers(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = ['property','guest','rating','comment','created_at']
+
+    def get_check_comments(self , obj):
+        return model.predict(vec.transform([obj.comment]))
 
 
 class PropertyListSerializers(serializers.ModelSerializer):
